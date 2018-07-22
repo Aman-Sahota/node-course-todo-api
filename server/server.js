@@ -25,3 +25,5 @@ app.post('/todos',(req,res)=>{
 app.listen(port,()=>{
     console.log('Server Up on Port',port);
 });
+
+module.exports=app;
