@@ -173,5 +173,5 @@ describe('PATCH /todos/:id',()=>{
                 expect(res.body.todo.completedAt).toBeNull();
             })
             .end(done);
-    })
+    });
 });
