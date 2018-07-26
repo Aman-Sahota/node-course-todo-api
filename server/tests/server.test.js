@@ -10,7 +10,8 @@ const todos=[{
     text:'First test Todo'
 },{
     _id:new ObjectID(),
-    text:'Second test Todo'
+    text:'Second test Todo',
+    completedAt:333
 }];
 
 beforeEach((done)=>{
@@ -111,11 +112,12 @@ describe('DELETE /todos/:id',()=>{
                     return done(err);
                 }
                 Todo.findById(id).then((todo)=>{
-                    // expect(todo).toNotExist();
-                    if(!todo){
-                        console.log('todo does not exist');
-                        done();
-                    }
+                    expect(todo).toBeNull();
+                    done();
+                    // if(!todo){
+                    //     console.log('todo does not exist');
+                    //     done();
+                    // }
                 }).catch((e)=> done(e));
             });
     });
@@ -134,4 +136,42 @@ describe('DELETE /todos/:id',()=>{
             .expect(404)
             .end(done);
     });
+});
+
+describe('PATCH /todos/:id',()=>{
+    it('should update a todo',(done)=>{
+        var id=todos[0]._id.toHexString();
+        var text='this is new text';
+        request(app)
+            .patch(`/todos/${id}`)
+            .send({
+                text,
+                completed:true
+            })
+            .expect(200)
+            .expect((res)=>{
+                expect(res.body.todo.text).toBe(text);
+                expect(res.body.todo.completed).toBe(true);
+                expect(typeof res.body.todo.completedAt).toBe('number');
+            })
+            .end(done)
+    });
+
+    it('should clear completedAt when todo is not completed',(done)=>{
+        var id=todos[0]._id.toHexString();
+        var text='this is new second text';
+        request(app)
+            .patch(`/todos/${id}`)
+            .expect(200)
+            .send({
+                text,
+                completed:false
+            })
+            .expect((res)=>{
+                expect(res.body.todo.text).toBe(text);
+                expect(res.body.todo.completed).toBe(false);
+                expect(res.body.todo.completedAt).toBeNull();
+            })
+            .end(done);
+    })
 });
