@@ -1,16 +1,30 @@
 const {SHA256}=require('crypto-js');
 const jwt=require('jsonwebtoken');
+const bcrypt=require('bcryptjs');
 
-var data={
-    id:10
-};
+var password='obitouchiha1996';
 
-var token=jwt.sign(data,'obito1996');
-console.log(token);
-console.log(typeof token);
+bcrypt.genSalt(10,(err,salt)=>{
+    bcrypt.hash(password,salt,(err,hash)=>{
+        console.log(hash);
+    });
+});
 
-var decoded=jwt.verify(token,'obito1996');
-console.log('decoded',decoded);
+var hashedPassword='$2a$10$MX0iM/XO8LzwGHiHeI9ipep5mFRWajNuhGlKYS4E/T5yNta6.5E9q';
+
+bcrypt.compare(password,hashedPassword,(err,res)=>{
+    console.log(res);
+});
+// var data={
+//     id:10
+// };
+
+// var token=jwt.sign(data,'obito1996');
+// console.log(token);
+// console.log(typeof token);
+
+// var decoded=jwt.verify(token,'obito1996');
+// console.log('decoded',decoded);
 
 // var message='I am user number 3';
 // console.log(`Message:${message}`);
