@@ -104,6 +104,9 @@ app.post('/users',(req,res)=>{
         return user.generateauthtoken();
     }).then((token)=>{
         // console.log('server',token);
+        //here header takes two arguments-1)Name of header,2)value of header
+        //here the name is prefixed by 'x-' in order to know that this is
+        //a custom header which is not by default supported by html
         res.header('x-auth',token).send(user);
     }).catch((e)=>{
         res.status(400).send(e);

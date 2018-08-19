@@ -31,12 +31,21 @@ tokens:[{
     }
 }]});
 
+//toJSON method is used so that only the id and email is given back whenever a 
+//new user is added
 UserSchema.methods.toJSON=function(){
+    //this keyword is used to know what we are manipulating
+    //here we are manipulating a single user document
     var user=this;
+
+    //the toObject method converts the mongoose var user from a document to a 
+    //normal object
     var userObject=user.toObject();
     return _.pick(user,['_id','email']);
 };
 
+//UserSchema.methods is an object where instance methods are added for
+//example generateauthtoken
 UserSchema.methods.generateauthtoken=function(){
     var user=this;
     var access='auth';
@@ -49,9 +58,10 @@ UserSchema.methods.generateauthtoken=function(){
     });
 };
 
+//this is where model methods are added 
 UserSchema.statics.findByToken=function(token){
+    //here we are manipulating a User model
     var User=this;
-    
     var decoded;
     
     try{
@@ -65,6 +75,7 @@ UserSchema.statics.findByToken=function(token){
 
     return User.findOne({
         '_id':decoded._id,
+        //'' is used whenever '.' is used in between 
         'tokens.token':token,
         'tokens.access':'auth'
     });
