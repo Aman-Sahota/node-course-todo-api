@@ -278,6 +278,7 @@ describe('POST /users/login',()=>{
         })
         .expect(400)
         .expect((res)=>{
+            //in place of toNotExist
             expect(res.header['x-auth']).toBeUndefined();
         })
         .end((err,res)=>{
