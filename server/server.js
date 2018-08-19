@@ -4,6 +4,7 @@ const express=require('express');
 const _=require('lodash');
 const bodyParser=require('body-parser');
 const {ObjectID}=require('mongodb');
+const bcrypt=require('bcryptjs');
 
 var mongoose=require('./db/mongoose');
 var Todo=require('./models/todo');
@@ -116,6 +117,23 @@ app.post('/users',(req,res)=>{
 
 app.get('/users/me',authenticate,(req,res)=>{
     res.send(req.user);
+});
+
+app.post('/users/login',(req,res)=>{
+    var body=_.pick(req.body,['email','password']);
+    User.findByCredentials(body.email,body.password).then((user)=>{
+        //why are we generating a token here
+        //the generatetoken method was used to create and send a token back to
+        //the new user which was then used to find the user in GET /users/me 
+        //Here we are generating a new token because-
+        //That's for the user logging in for the first time, 
+        //they wouldn't be able to access that route again until they logged out.
+        return user.generateauthtoken().then((token)=>{
+            res.header('x-auth',token).send(user);
+        });
+    }).catch((e)=>{
+        res.status(400).send();
+    })
 });
 
 app.listen(port,()=>{
