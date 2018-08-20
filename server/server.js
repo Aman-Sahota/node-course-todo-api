@@ -16,9 +16,10 @@ var port=process.env.PORT;
 
 app.use(bodyParser.json());
 
-app.post('/todos',(req,res)=>{
+app.post('/todos',authenticate,(req,res)=>{
     var newTodo=new Todo({
-        text:req.body.text
+        text:req.body.text,
+        _creator:req.user._id
     });
     newTodo.save().then((doc)=>{
         res.send(doc);
@@ -27,22 +28,27 @@ app.post('/todos',(req,res)=>{
     });
 });
 
-app.get('/todos',(req,res)=>{
+app.get('/todos',authenticate,(req,res)=>{
     //todo is the name of model
     //with find method returns an array which can be of any name
     //i have passed name as 'todos' it can be anything
     //todos is an array a collection which has all the documents
-    Todo.find().then((todos)=>{
+    Todo.find({
+        _creator:req.user._id
+    }).then((todos)=>{
         res.send({collection:todos});
     },(e)=>{
         res.status(400).send(e);
     });
 });
 
-app.get('/todos/:id',(req,res)=>{
+app.get('/todos/:id',authenticate,(req,res)=>{
     var id=req.params.id;
     if(ObjectID.isValid(id)){
-        Todo.findById(id).then((todo)=>{
+        Todo.findOne({
+            _id:id,
+            _creator:req.user._id
+        }).then((todo)=>{
             if(!todo){
                 return res.status(404).send(todo);
             }
@@ -55,12 +61,15 @@ app.get('/todos/:id',(req,res)=>{
     }
 });
 
-app.delete('/todos/:id',(req,res)=>{
+app.delete('/todos/:id',authenticate,(req,res)=>{
     var id=req.params.id;
     if(!ObjectID.isValid(id)){
         return res.status(404).send();
     }else{
-        Todo.findByIdAndRemove(id).then((todo)=>{
+        Todo.findOneAndRemove({
+            _id:id,
+            _creator:req.user._id
+        }).then((todo)=>{
             if(!todo){
                 return res.status(404).send();
             }
@@ -71,8 +80,11 @@ app.delete('/todos/:id',(req,res)=>{
     }
 });
 
-app.patch('/todos/:id',(req,res)=>{
+app.patch('/todos/:id',authenticate,(req,res)=>{
     var id=req.params.id;
+
+    //here body is an object made by picking the specified properties(text and 
+    //completed) from req.body and these properties are added to the body object
     var body=_.pick(req.body, ['text', 'completed']);
     
     if(!ObjectID.isValid(id)){
@@ -80,13 +92,18 @@ app.patch('/todos/:id',(req,res)=>{
     }
 
     if(_.isBoolean(body.completed) && body.completed){
+        //Now, body.completedAt is not a property on body object since body object
+        //has two properties text and completed therfore here completedAt property is 
+        //added to the body object
         body.completedAt=new Date().getTime();  
     }else{
         body.completed=false;
         body.completedAt=null;
     }
 
-    Todo.findByIdAndUpdate(id,{$set:body},{new:true}).then((todo)=>{
+    Todo.findOneAndUpdate({_id:id, _creator:req.user._id},{$set:body},{new:true}).then((todo)=>{
+        //new: true means that new document after update will be returned
+        //these are properties that are used to tweak the result provided by mongoose
         if(!todo){
             return res.status(404).send();
         }
