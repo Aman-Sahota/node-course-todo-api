@@ -118,7 +118,7 @@ describe('DELETE /todos/:id',()=>{
                     return done(err);
                 }
                 Todo.findById(id).then((todo)=>{
-                    expect(todo).toBeNull();
+                    expect(todo).toBeFalsy();
                     done();
                     // if(!todo){
                     //     console.log('todo does not exist');
@@ -182,6 +182,7 @@ describe('PATCH /todos/:id',()=>{
             .expect((res)=>{
                 expect(res.body.todo.text).toBe(text);
                 expect(res.body.todo.completed).toBe(true);
+                // expect(res.body.todo.completedAt).toBeA('number');
                 expect(typeof res.body.todo.completedAt).toBe('number');
             })
             .end(done)
@@ -216,8 +217,8 @@ describe('PATCH /todos/:id',()=>{
                 expect(res.body.todo.text).toBe(text);
                 expect(res.body.todo.completed).toBe(false);
                 //first toNotExist method was used but this method is no longer there
-                //thus toBeNull was used in its place
-                expect(res.body.todo.completedAt).toBeNull();
+                //thus tobefalsy was used in its place
+                expect(res.body.todo.completedAt).toBeFalsy();
             })
             .end(done);
     });
@@ -334,7 +335,7 @@ describe('POST /users/login',()=>{
         .expect(400)
         .expect((res)=>{
             //in place of toNotExist
-            expect(res.header['x-auth']).toBeUndefined();
+            expect(res.header['x-auth']).toBeFalsy();
         })
         .end((err,res)=>{
             if(err){
